@@ -1,0 +1,5 @@
+.venv
+dist
+.tox
+.pytest_cache
+__pycache__
