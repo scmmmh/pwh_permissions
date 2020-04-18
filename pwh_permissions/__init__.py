@@ -1,5 +1,5 @@
 def tokenise(expression):
-    """Tokenise the expression, splitting on spaces and brackets."""
+    """Tokenise the ``expression``, splitting on spaces and brackets."""
     tokens = []
     buffer = []
     for char in expression:
@@ -17,12 +17,11 @@ def tokenise(expression):
 
 
 def parse(tokens):
-    """Parses the infix permission into a postfix instruction list."""
+    """Parses the infix permission ``tokens`` into a postfix instruction list."""
     result = []
     stack = []
     buffer = []
     for token in tokens:
-        print(token, stack, result)
         if token in ['and', 'or', '(']:
             if buffer:
                 result.append(tuple(buffer))
@@ -45,3 +44,22 @@ def parse(tokens):
     while stack:
         result.append(stack.pop())
     return result
+
+
+def evaluate(instructions, values):
+    """Evaluate the ``instructions``, substituting values from ``values``."""
+    stack = []
+    for instruction in instructions:
+        if isinstance(instruction, tuple):
+            obj = values[instruction[0]]
+            attr = getattr(obj, instruction[1])
+            params = [values[param] if param in values else param for param in instruction[2:]]
+            stack.append(attr(*params) is True)
+        else:
+            a = stack.pop()
+            b = stack.pop()
+            if instruction == 'and':
+                stack.append(a and b)
+            elif instruction == 'or':
+                stack.append(a or b)
+    return stack.pop()
