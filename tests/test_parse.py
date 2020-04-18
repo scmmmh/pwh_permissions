@@ -1,5 +1,6 @@
 from pwh_permissions import tokenise, parse
 
+
 def test_basic_parse():
     instructions = parse(tokenise('$obj allow $user "edit"'))
     assert len(instructions) == 1
@@ -13,7 +14,8 @@ def test_combined_parse():
 
 
 def test_bracket_parse():
-    instructions = parse(tokenise('$obj allow $user "edit" and ($obj has_permission "admin" or $obj has_permission "superuser")'))
-    print(instructions)
+    instructions = parse(tokenise('$obj allow $user "edit" and ($obj has_permission "admin" or $obj has_permission ' +
+                                  '"superuser")'))
     assert len(instructions) == 5
-    assert instructions == [('$obj', 'allow', '$user', '"edit"'), ('$obj', 'has_permission', '"admin"'), ('$obj', 'has_permission', '"superuser"'), 'or', 'and']
+    assert instructions == [('$obj', 'allow', '$user', '"edit"'), ('$obj', 'has_permission', '"admin"'),
+                            ('$obj', 'has_permission', '"superuser"'), 'or', 'and']
