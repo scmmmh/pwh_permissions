@@ -1,3 +1,18 @@
+import re
+
+
+def convert_token(token):
+    """Convert the token into a boolean value or a numeric value, if it is one."""
+    if token == 'True':
+        return True
+    elif token == 'False':
+        return False
+    elif re.match('^[0-9]+$', token):
+        return int(token)
+    else:
+        return token
+
+
 def tokenise(expression):
     """Tokenise the ``expression``, splitting on spaces and brackets."""
     tokens = []
@@ -5,14 +20,14 @@ def tokenise(expression):
     for char in expression:
         if char in [' ', '(', ')']:
             if buffer:
-                tokens.append(''.join(buffer).strip())
+                tokens.append(convert_token(''.join(buffer).strip()))
                 buffer = []
         buffer.append(char)
         if char in ['(', ')']:
-            tokens.append(''.join(buffer).strip())
+            tokens.append(convert_token(''.join(buffer).strip()))
             buffer = []
     if buffer:
-        tokens.append(''.join(buffer).strip())
+        tokens.append(convert_token(''.join(buffer).strip()))
     return [token for token in tokens if token.strip()]
 
 
