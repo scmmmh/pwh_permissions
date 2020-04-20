@@ -1,6 +1,28 @@
 """A simple permission parsing library.
 
 The main function for permission checking is :func:`pwh_permissions.permitted`.
+
+The permission language is structured as follows:
+
+.. sourcecode:: ebnf
+
+  EXPRESSION := CALL | EXPRESSION , OPERATOR , EXPRESSION | "(" , EXPRESSION , ")" | "True" | "False"
+  OPERATOR := "and" | "or"
+  CALL := CLASS | CLASS , FUNCTION | CLASS , FUNCTION , PARAMLIST
+  PARAMLIST : = PARAM | PARAM , PARAMLIST
+  CLASS := VALUE
+  FUNCTION := VALUE
+  PARAM := VALUE
+  VALUE := CHAR | CHAR , VALUE
+  CHAR := "a-z" | "A-Z" | "0-9"
+
+Examples::
+
+  page allow user edit
+
+  page allow user edit or user has_permission admin
+
+  user is_logged_in and (page allow user edit or page owned_by user)
 """
 import re
 
