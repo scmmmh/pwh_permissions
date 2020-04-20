@@ -1,4 +1,6 @@
-from pwh_permissions import tokenise, parse, evaluate
+import pytest
+
+from pwh_permissions import tokenise, parse, evaluate, PermissionException
 
 
 class ExampleObject(object):
@@ -28,6 +30,12 @@ class ExampleUser(object):
             return True
         else:
             return False
+
+
+def test_empty_evaluate():
+    """Test evaluating an empty expression."""
+    result = evaluate(parse(tokenise('')), {})
+    assert result is False
 
 
 def test_basic_evaluate():
@@ -110,3 +118,49 @@ def test_bracket_evaluate():
     result = evaluate(instructions, {'obj': ExampleObject(),
                                      'user': ExampleUser(False, 'superuser')})
     assert result is False
+
+
+def test_invalid_evaluate_missing_expression_1():
+    """Test exception handling for an invalid boolean permission expression."""
+    with pytest.raises(PermissionException) as exc_info:
+        evaluate(parse(tokenise('obj allow user edit and')), {'obj': ExampleObject(),
+                                                              'user': ExampleUser(True, 'admin')})
+    assert exc_info.value.message == 'Missing expression for boolean operator'
+
+
+def test_invalid_evaluate_missing_expression_2():
+    """Test exception handling for an invalid boolean permission expression."""
+    with pytest.raises(PermissionException) as exc_info:
+        evaluate(parse(tokenise('and')), {})
+    assert exc_info.value.message == 'Missing expression for boolean operator'
+
+
+def test_invalid_missing_object():
+    """Test exception handling for a missing subsitution object."""
+    with pytest.raises(PermissionException) as exc_info:
+        evaluate(parse(tokenise('obj allow user edit')), {'user': ExampleUser(True, 'admin')})
+    assert exc_info.value.message == 'Object "obj" not found in the values'
+
+
+def test_invalid_evaluate_missing_function():
+    """Test exception handling for a missing function."""
+    with pytest.raises(PermissionException) as exc_info:
+        evaluate(parse(tokenise('obj allowed user edit')), {'obj': ExampleObject(),
+                                                            'user': ExampleUser(True, 'admin')})
+    assert exc_info.value.message == 'Object "obj" has no method "allowed"'
+
+
+def test_invalid_evaluate_too_many_parameters():
+    """Test exception handling for too many function parameters."""
+    with pytest.raises(PermissionException) as exc_info:
+        evaluate(parse(tokenise('obj allow user edit extra')), {'obj': ExampleObject(),
+                                                                'user': ExampleUser(True, 'admin')})
+    assert exc_info.value.message == 'Too many parameters for method "allow" on "obj"'
+
+
+def test_invalid_evaluate_too_few_parameters():
+    """Test exception handling for too few function parameters."""
+    with pytest.raises(PermissionException) as exc_info:
+        evaluate(parse(tokenise('obj allow user')), {'obj': ExampleObject(),
+                                                     'user': ExampleUser(True, 'admin')})
+    assert exc_info.value.message == 'Too few parameters for method "allow" on "obj"'

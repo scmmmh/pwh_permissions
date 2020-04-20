@@ -26,6 +26,15 @@ Examples::
 """
 import re
 
+from inspect import signature
+
+
+class PermissionException(Exception):
+    """Exception indicating an error in either the definition of the permission expression or its execution."""
+
+    def __init__(self, message):
+        self.message = message
+
 
 def convert_token(token):
     """Convert the token into a bool value or a numeric value, if it is one.
@@ -99,15 +108,22 @@ def parse(tokens):
             if buffer:
                 result.append(tuple(buffer))
                 buffer = []
+            if len(stack) == 0:
+                raise PermissionException('Too many closing brackets')
             while stack[-1] != '(':
                 result.append(stack.pop())
+                if len(stack) == 0:
+                    raise PermissionException('Too many closing brackets')
             stack.pop()
         else:
             buffer.append(token)
     if buffer:
         result.append(tuple(buffer))
     while stack:
-        result.append(stack.pop())
+        tmp = stack.pop()
+        if tmp == '(':
+            raise PermissionException('Missing closing bracket')
+        result.append(tmp)
     return result
 
 
@@ -121,15 +137,40 @@ def evaluate(instructions, values):
     :return: The result of evaluating the ``instructions``
     :rtype: ``bool``
     """
+    if not instructions:
+        return False
     stack = []
     for instruction in instructions:
         if isinstance(instruction, tuple):
+            if instruction[0] not in values:
+                raise PermissionException('Object "{0}" not found in the values'.format(instruction[0]))
             obj = values[instruction[0]]
+            if not hasattr(obj, instruction[1]):
+                raise PermissionException('Object "{0}" has no method "{1}"'.format(instruction[0], instruction[1]))
             attr = getattr(obj, instruction[1])
             params = [values[param] if param in values else param for param in instruction[2:]]
-            stack.append(attr(*params) is True)
+            try:
+                stack.append(attr(*params) is True)
+            except TypeError:
+                sig = signature(attr)
+                min_count = len([param for param in sig.parameters.values() if param.default == param.empty])
+                max_count = len(sig.parameters)
+                if len(params) < min_count:
+                    raise PermissionException('Too few parameters for method "{0}" on "{1}"'.format(
+                        instruction[1],
+                        instruction[0],
+                    ))
+                elif len(params) > max_count:
+                    raise PermissionException('Too many parameters for method "{0}" on "{1}"'.format(
+                        instruction[1],
+                        instruction[0],
+                    ))
         else:
+            if len(stack) == 0:
+                raise PermissionException('Missing expression for boolean operator')
             a = stack.pop()
+            if len(stack) == 0:
+                raise PermissionException('Missing expression for boolean operator')
             b = stack.pop()
             if instruction == 'and':
                 stack.append(a and b)

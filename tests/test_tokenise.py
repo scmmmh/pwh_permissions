@@ -1,6 +1,12 @@
 from pwh_permissions import tokenise
 
 
+def test_empty_tokenise():
+    """Test tokenising an empty string works."""
+    tokens = tokenise('')
+    assert len(tokens) == 0
+
+
 def test_basic_tokenise():
     """Test tokenising a simple expression."""
     tokens = tokenise('obj allow user edit')
