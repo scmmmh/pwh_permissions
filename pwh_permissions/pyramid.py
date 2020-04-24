@@ -1,8 +1,6 @@
-import json
-
-from base64 import urlsafe_b64encode
 from decorator import decorator
 from functools import lru_cache
+from pwh_pyramid_routes import encode_route
 from pyramid.httpexceptions import HTTPForbidden, HTTPFound
 from pwh_permissions import parse, tokenise, evaluate
 from re import compile
@@ -12,16 +10,6 @@ OBJ_PATTERN = compile('^([A-Za-z]+):([A-Za-z]+)')
 class_mapper = None
 login_route = None
 store_current = True
-
-
-def encode_route(request):
-    """Jinja2 filter that returns the current route as a JSON object, which is then URL-safe base64 encoded."""
-    if request.matched_route:
-        data = {'route': request.matched_route.name,
-                'params': request.matchdict,
-                'query': list(request.params.items())}
-        return urlsafe_b64encode(json.dumps(data).encode('utf-8')).decode()
-    return None
 
 
 @lru_cache()

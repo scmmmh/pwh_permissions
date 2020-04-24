@@ -434,7 +434,7 @@ testing = ["jaraco.itertools", "func-timeout"]
 pyramid = []
 
 [metadata]
-content-hash = "422234040a1c559da1e1882ac68aa30fa83e29e9df951fb1b26367b524d5f644"
+content-hash = "53a8466659ca34df6f9ca81705730c3794a1784113fafa9199383d676a35e2d8"
 python-versions = "^3.7"
 
 [metadata.files]
