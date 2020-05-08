@@ -1,5 +1,9 @@
 # Changes
 
+# Dev
+
+* **BUGFIX**: Handle None objects correctly
+
 # 1.2.0
 
 * **UPDATE**: Depend on the pwh_pyramid_routes library for pyramid-integration routing helpers

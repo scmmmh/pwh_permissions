@@ -120,6 +120,14 @@ def test_bracket_evaluate():
     assert result is False
 
 
+def test_none_evaluate():
+    """Test evaluating three expressions in a complex structure using a bracket."""
+    instructions = parse(tokenise('obj allow user edit'))
+    result = evaluate(instructions, {'obj': None,
+                                     'user': ExampleUser(True, 'admin')})
+    assert result is False
+
+
 def test_invalid_evaluate_missing_expression_1():
     """Test exception handling for an invalid boolean permission expression."""
     with pytest.raises(PermissionException) as exc_info:
