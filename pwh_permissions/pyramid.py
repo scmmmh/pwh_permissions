@@ -6,7 +6,7 @@ from pwh_permissions import parse, tokenise, evaluate
 from re import compile
 
 
-OBJ_PATTERN = compile('^([A-Za-z]+):([A-Za-z]+)')
+OBJ_PATTERN = compile('^([A-Za-z]+):([A-Za-z_0-9]+)(?::([A-Za-z]+))?')
 class_mapper = None
 login_route = None
 store_current = True
@@ -22,7 +22,10 @@ def process_permission(permission):
             for part in instruction:
                 match = OBJ_PATTERN.match(part)
                 if match:
-                    values[part] = (class_mapper(match.group(1)), match.group(2))
+                    if match.group(3) is None:
+                        values[part] = (class_mapper(match.group(1)), 'id', match.group(2))
+                    else:
+                        values[part] = (class_mapper(match.group(1)), match.group(2), match.group(3))
                 elif part == '$current_user':
                     values[part] = 'current_user'
     return instructions, values
@@ -34,7 +37,7 @@ def check_permission(request, instructions, base_values):
     values = {}
     for key, value in base_values.items():
         if isinstance(value, tuple):
-            values[key] = request.dbsession.query(value[0]).filter(value[0].id == request.matchdict[value[1]]).first()
+            values[key] = request.dbsession.query(value[0]).filter(getattr(value[0], value[1]) == request.matchdict[value[2]]).first()
         elif value == 'current_user':
             values[key] = request.current_user
     return evaluate(instructions, values)

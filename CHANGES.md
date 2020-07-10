@@ -1,5 +1,9 @@
 # Changes
 
+# DEV
+
+* **NEW**: The pyramid helper now supports setting the database columnt to check against
+
 # 1.2.1
 
 * **BUGFIX**: Handle None objects correctly
